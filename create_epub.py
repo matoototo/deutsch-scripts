@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser(description='Create an ebook from a given JSON 
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
 parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output EPUB file', required=True)
 parser.add_argument('-l', metavar='N', type=int, help='create EPUB from only the first N articles', default=1e9)
-
+parser.add_argument('--cover', metavar='filepath', type=pathlib.Path, help='path to a custom cover image')
 
 args = parser.parse_args()
 out_filename = args.o
@@ -21,6 +21,7 @@ book.set_identifier('id123456')
 book.set_title('Nachrichtenleicht')
 book.set_language('de')
 
+book.set_cover(str(args.cover), open(args.cover, 'rb').read()) if args.cover else None
 book.add_author('Deutschlandfunk')
 
 articles = json.load(open(in_filename))

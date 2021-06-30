@@ -29,12 +29,18 @@ articles = json.load(open(in_filename))
 book.toc = []
 book.spine = []
 
+def remove_img_tag(html):
+    start = html.find('<div class=\"image\"')
+    end = html.find('</div>')
+    return html[:start] + html[end+6:]
+
 for article in articles:
     article['content'] = article['content'].replace('2em', '1em')
     start = article['content'].find('<h2>')
     end = article['content'].find('</h2>')
     title = article['content'][start+4:end]
     id = article['url'][article['url'].find('article_id=')+11:]
+    article['content'] = remove_img_tag(article['content'])
     c = epub.EpubHtml(title=title, file_name=f'${id}.xhtml', lang='de')
     c.content = article['content']
     book.add_item(c)

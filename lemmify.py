@@ -46,7 +46,11 @@ import spacy
 nlp = spacy.load('de_core_news_sm')
 
 for article in articles:
-    lemmas = set(map(lambda t: t.lemma_, nlp(extract_article_text(article['content']))))
+    article_text = extract_article_text(article['content'])
+    sentences = article_text.split('.')
+    lemmas = map(lambda sentence : list(set(map(lambda t: t.lemma_, nlp(sentence)))), sentences)
+    article['sentence-lemmas'] = list(lemmas)
+    lemmas = set(map(lambda t: t.lemma_, nlp(article_text)))
     article['lemmas'] = list(lemmas)
 
 with open(out_filename, 'w') as outfile:

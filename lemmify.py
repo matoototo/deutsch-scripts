@@ -43,7 +43,6 @@ def extract_article_text(html):
 
 import spacy
 
-from spacy.lang.de.examples import sentences
 nlp = spacy.load('de_core_news_sm')
 
 for article in articles:

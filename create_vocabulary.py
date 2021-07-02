@@ -21,7 +21,7 @@ for article in articles:
         lemmas.append(lemma)
 
 def bad_char_predicate(word):
-    bad = ['<', '\n', '>', '\"', '’', '.', *list('0123456789')]
+    bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', *list('0123456789')]
     for char in bad:
         if char in word:
             return False
@@ -29,6 +29,5 @@ def bad_char_predicate(word):
 
 counted = Counter(lemmas)
 filtered = list(filter(lambda x: (counted[x] > 1 or x[0] in ascii_lowercase) and bad_char_predicate(x), set(lemmas)))
-glued = [{'lemma': k, 'count': v} for k, v in dict(counted.most_common(None)).items() if k in filtered]
-
+glued = {k : v for k, v in dict(counted.most_common(None)).items() if k in filtered}
 json.dump(glued, open(out_filename, 'w'), separators=(',', ': '), indent=4)

@@ -21,7 +21,7 @@ for article in articles:
         lemmas.append(lemma)
 
 def bad_char_predicate(word):
-    bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', *list('0123456789')]
+    bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', '-', '!', '?', *list('0123456789')]
     for char in bad:
         if char in word:
             return False

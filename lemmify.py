@@ -7,10 +7,12 @@ import pathlib
 parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
 parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
+parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | yt}', required=True)
 
 args = parser.parse_args()
 in_filename = args.i
 out_filename = args.o
+source = args.s
 
 articles = json.load(open(in_filename))
 
@@ -46,8 +48,10 @@ import spacy
 nlp = spacy.load('de_core_news_sm')
 
 for article in articles:
-    article_text = extract_article_text(article['content'])
-    sentences = article_text.split('.')
+    if (source == 'nl'): text = extract_article_text(article['content'])
+    elif (source == 'yt'): text = article['transcript']
+    else: exit(1)
+    sentences = text.split('.')
     lemmas = []
     for sentence in sentences:
         res = nlp(sentence)
@@ -56,20 +60,12 @@ for article in articles:
         lemmas.append(list(set(map(lambda t : t.lemma_, filtered))))
 
     article['sentence-lemmas'] = list(lemmas)
-    res = nlp(article_text)
+    res = nlp(text)
     names = [w for n in res.ents for w in n.__str__().split() if n.label_ in ['PER', 'LOC']]
     filtered = set(filter(lambda t : t.lemma_ not in names, res))
     lemmas = set(map(lambda t: t.lemma_, filtered))
     article['lemmas'] = list(lemmas)
 
-with open(out_filename, 'w') as outfile:
-    outfile.write('[\n')
-    first = True
-    for article in articles:
-        if first:
-            first = not first
-        else:
-            outfile.write(',')
-            outfile.write('\n')
-        json.dump(article, outfile)
-    outfile.write(']')
+
+json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)
+

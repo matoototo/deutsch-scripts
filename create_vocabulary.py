@@ -28,6 +28,6 @@ def bad_char_predicate(word):
     return True
 
 counted = Counter(lemmas)
-filtered = list(filter(lambda x: (counted[x] > 1 or x[0] in ascii_lowercase) and bad_char_predicate(x), set(lemmas)))
+filtered = list(filter(lambda x:  bad_char_predicate(x), set(lemmas)))
 glued = {k : v for k, v in dict(counted.most_common(None)).items() if k in filtered}
 json.dump(glued, open(out_filename, 'w'), separators=(',', ': '), indent=4)

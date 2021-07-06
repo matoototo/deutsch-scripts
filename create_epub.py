@@ -8,11 +8,13 @@ parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath 
 parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output EPUB file', required=True)
 parser.add_argument('-l', metavar='N', type=int, help='create EPUB from only the first N articles', default=1e9)
 parser.add_argument('--cover', metavar='filepath', type=pathlib.Path, help='path to a custom cover image')
+parser.add_argument('-m', action='store_true', help='if present, adds a <p> tag containing mined words below the title')
 
 args = parser.parse_args()
 out_filename = args.o
 in_filename = args.i
 limit = args.l
+add_mined = args.m
 
 book = epub.EpubBook()
 
@@ -34,6 +36,12 @@ def remove_img_tag(html):
     end = html.find('</div>')
     return html[:start] + html[end+6:]
 
+def insert_mined_words(html, mined):
+    mined_tag = "<p style=\"font-size: 0.8em\"> " + ', '.join(mined) + "</p> <hr/>"
+    end = html.find("</h2>") + len("</h2>")
+    html = html[:end] + mined_tag + html[end:]
+    return html
+
 for article in articles:
     article['content'] = article['content'].replace('2em', '1em')
     start = article['content'].find('<h2>')
@@ -41,6 +49,7 @@ for article in articles:
     title = article['content'][start+4:end]
     id = article['url'][article['url'].find('article_id=')+11:]
     article['content'] = remove_img_tag(article['content'])
+    if (add_mined): article['content'] = insert_mined_words(article['content'], article['mined'])
     c = epub.EpubHtml(title=title, file_name=f'${id}.xhtml', lang='de')
     c.content = article['content']
     book.add_item(c)

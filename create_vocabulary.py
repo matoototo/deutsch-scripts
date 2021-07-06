@@ -2,7 +2,6 @@ import json
 import argparse
 import pathlib
 from collections import Counter
-from string import ascii_lowercase
 
 parser = argparse.ArgumentParser(description='Creates a list of lemmas used in a given (articles) JSON,\
                                               counting their frequency and filtering out those that are likely bad.')
@@ -21,7 +20,7 @@ for article in articles:
         lemmas.append(lemma)
 
 def bad_char_predicate(word):
-    bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', '-', '!', '?', *list('0123456789')]
+    bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', '-', '!', '?', *list('0123456789'), '\u00a0']
     for char in bad:
         if char in word:
             return False

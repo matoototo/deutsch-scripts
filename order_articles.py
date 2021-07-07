@@ -42,6 +42,14 @@ def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x))
         processed.append({**article, 'importance': importance})
     return processed
 
+def process_avg_length(articles):
+    processed = []
+    for article in articles:
+        lengths = list(map(lambda x : len(x), article['sentence-lemmas']))
+        avglen = 0 if lengths == [] else sum(lengths)/len(lengths)
+        processed.append({**article, 'avglen': avglen})
+    return processed
+
 def percentage_known_order(articles):
     articles.sort(key=(lambda x : x['percentage known']), reverse=True)
     return articles
@@ -55,10 +63,11 @@ def importance_order(articles):
     return articles
 
 def combined_order(articles):
-    imp_w = 0.75
+    imp_w = 1.0
     npx_w = 10.0
     kwn_w = 1.0
-    articles.sort(key=(lambda x : imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known']), reverse=True)
+    len_w = 0.0
+    articles.sort(key=(lambda x : imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']), reverse=True)
     return articles
 
 # import json

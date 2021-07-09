@@ -2,6 +2,7 @@ import sqlite3
 import json
 import argparse
 import pathlib
+import re
 
 parser = argparse.ArgumentParser(description='Lemmify words from the specified fields in a given Anki deck.')
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to an anki2 file', required=True)
@@ -22,11 +23,15 @@ cur.execute('SELECT * FROM notes;')
 rows = cur.fetchall()
 rows = list(map(lambda row : {'mid': row[2], 'data': row[6].split('\x1f')}, rows))
 
+def clean(row):
+    row = re.sub(r"</?\w+>", " ", row)
+    return row
+
 extracted = []
 for row in rows:
     for field in note_types[str(row['mid'])]['flds']:
         if field['name'] in target_fields:
-            extracted.append(row['data'][field['ord']])
+            extracted.append(clean(row['data'][field['ord']]))
 
 import spacy
 

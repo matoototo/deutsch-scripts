@@ -8,11 +8,13 @@ parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
 parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
 parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | yt}', required=True)
+parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
 
 args = parser.parse_args()
 in_filename = args.i
 out_filename = args.o
 source = args.s
+glue = not args.no_glue
 
 articles = json.load(open(in_filename))
 
@@ -43,6 +45,14 @@ def extract_article_text(html):
         text += remove_strong_tag(html[s+closing_delta:e]) + '\n\n'
     return text
 
+def glue_dash(sentence):
+    indices = [i for i in find_all(sentence, "-") if i+1 < len(sentence) and sentence[i+1].isupper()]
+    sentence = list(sentence)
+    for i in indices:
+        sentence[i] = ''
+        sentence[i+1] = sentence[i+1].lower()
+    return ''.join(sentence)
+
 import spacy
 
 nlp = spacy.load('de_core_news_sm')
@@ -51,6 +61,8 @@ for article in articles:
     if (source == 'nl'): text = extract_article_text(article['content'])
     elif (source == 'yt'): text = article['transcript']
     else: exit(1)
+    if glue:
+        text = '.'.join([glue_dash(s) for s in text.split('.')])
     sentences = text.split('.')
     lemmas = []
     for sentence in sentences:

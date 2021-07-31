@@ -70,16 +70,31 @@ def combined_order(articles):
     articles.sort(key=(lambda x : imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']), reverse=True)
     return articles
 
-# import json
+if __name__ == '__main__':
 
-# known_lemmas = json.load(open('data/extracted-anki.json'))
-# articles = json.load(open('data/articles-lemmified-sentencewise.json'))
-# vocab = json.load(open('data/vocab.json'))
+    import json, argparse, pathlib
 
-# articles = process_count_n_plus_x(known_lemmas, articles, vocab)
-# articles = process_percentage_known(known_lemmas, articles, vocab)
-# articles = process_importance_of_mined(articles, vocab)
+    parser = argparse.ArgumentParser(description='Order articles.')
+    parser.add_argument('-k', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with known lemmas', required=True)
+    parser.add_argument('-a', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with the articles', required=True)
+    parser.add_argument('-v', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with allowed vocab', required=True)
+    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
 
-# articles = combined_order(articles)
+    args = parser.parse_args()
+    known_path = args.k
+    articles_path = args.a
+    vocab_path = args.v
+    out_path = args.o
 
-# json.dump(articles, open('./data/articles-processed.json', 'w'), indent=4)
+
+    known_lemmas = json.load(open(known_path))
+    articles = json.load(open(articles_path))
+    vocab = json.load(open(vocab_path))
+
+    articles = process_count_n_plus_x(known_lemmas, articles, vocab)
+    articles = process_percentage_known(known_lemmas, articles, vocab)
+    articles = process_importance_of_mined(articles, vocab)
+    articles = process_avg_length(articles)
+    articles = combined_order(articles)
+
+    json.dump(articles, open(out_path, 'w'), indent=4)

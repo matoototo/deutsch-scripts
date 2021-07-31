@@ -45,24 +45,24 @@ def extract_article_text(html):
         text += remove_strong_tag(html[s+closing_delta:e]) + '\n\n'
     return text
 
-def glue_dash(sentence):
-    indices = [i for i in find_all(sentence, "-") if i+1 < len(sentence) and sentence[i+1].isupper()]
-    sentence = list(sentence)
+def glue_dash(text):
+    indices = [i for i in find_all(text, "-") if i+1 < len(text) and text[i+1].isupper()]
+    text = list(text)
     for i in indices:
-        sentence[i] = ''
-        sentence[i+1] = sentence[i+1].lower()
-    return ''.join(sentence)
+        text[i] = ''
+        text[i+1] = text[i+1].lower()
+    return ''.join(text)
 
 import spacy
 
 nlp = spacy.load('de_core_news_sm')
 
 for article in articles:
-    if (source == 'nl'): text = extract_article_text(article['content'])
+    if (source == 'nl'):
+        if glue: article['content'] = glue_dash(article['content'])
+        text = extract_article_text(article['content'])
     elif (source == 'yt'): text = article['transcript']
     else: exit(1)
-    if glue:
-        text = '.'.join([glue_dash(s) for s in text.split('.')])
     sentences = text.split('.')
     lemmas = []
     for sentence in sentences:

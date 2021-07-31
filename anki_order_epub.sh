@@ -3,6 +3,12 @@
 # Given an anki .apkg and a limit L, this script extracts that file into an anki2 collection,
 # calls anki_lemmas.py on it, then calls order_articles.py and finally, creates an epub with the top L articles.
 
+if (( $# != 2 ))
+then
+  echo "The script requires 2 arguments, a path to an anki .apkg file and the article limit."
+  exit 1
+fi
+
 file=$(basename -- "$1")
 renamed="${file%%.*}.zip"
 

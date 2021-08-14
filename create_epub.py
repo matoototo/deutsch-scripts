@@ -9,12 +9,20 @@ parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath 
 parser.add_argument('-l', metavar='N', type=int, help='create EPUB from only the first N articles', default=1e9)
 parser.add_argument('--cover', metavar='filepath', type=pathlib.Path, help='path to a custom cover image')
 parser.add_argument('-m', action='store_true', help='if present, adds a <p> tag containing mined words below the title')
+parser.add_argument('-n', action='store_true', help='if present, filters out articles with the nachrichten tag.')
+parser.add_argument('-s', action='store_true', help='if present, filters out articles with the sport tag.')
+parser.add_argument('-k', action='store_true', help='if present, filters out articles with the kultur tag.')
+parser.add_argument('-v', action='store_true', help='if present, filters out articles with the vermischtes tag.')
 
 args = parser.parse_args()
 out_filename = args.o
 in_filename = args.i
 limit = args.l
 add_mined = args.m
+
+filters = [args.n, args.s, args.k, args.v]
+tags = ["2042", "2039", "2045", "2046"]
+f_tags = [t for t, f in zip(tags, filters) if f]
 
 book = epub.EpubBook()
 
@@ -27,6 +35,8 @@ book.set_cover(str(args.cover), open(args.cover, 'rb').read()) if args.cover els
 book.add_author('Deutschlandfunk')
 
 articles = json.load(open(in_filename))
+
+articles = filter(lambda article : not any(tag in article['url'] for tag in f_tags), articles)
 
 book.toc = []
 book.spine = []

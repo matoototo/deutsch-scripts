@@ -2,6 +2,7 @@ from ebooklib import epub
 import json
 import argparse
 import pathlib
+from datetime import date
 
 parser = argparse.ArgumentParser(description='Create an ebook from a given JSON containing articles.')
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
@@ -22,13 +23,15 @@ add_mined = args.m
 
 filters = [args.n, args.s, args.k, args.v]
 tags = ["2042", "2039", "2045", "2046"]
+tags_char = ['Nachrichten', 'Sport', 'Kultur', 'Vermischtes']
 f_tags = [t for t, f in zip(tags, filters) if f]
+char_tag = " ".join([t for t, f in zip(tags_char, filters) if not f])
+title = ('Nachrichtenleicht ' + date.today().strftime('%d.%m.%Y') + ' (' + char_tag + ')').strip()
 
 book = epub.EpubBook()
 
 # set metadata
-book.set_identifier('id123456')
-book.set_title('Nachrichtenleicht')
+book.set_title(title)
 book.set_language('de')
 
 book.set_cover(str(args.cover), open(args.cover, 'rb').read()) if args.cover else None

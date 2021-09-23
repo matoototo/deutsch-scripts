@@ -16,8 +16,7 @@ articles = json.load(open(in_filename))
 
 lemmas = []
 for article in articles:
-    for lemma in article['lemmas']:
-        lemmas.append(lemma)
+    lemmas += sum([x for x in article['sentence-lemmas']], [])
 
 def bad_char_predicate(word):
     bad = ['<', '\n', '>', '\"', '’', '.', ':', ',', '-', '!', '?', *list('0123456789'), '\u00a0']

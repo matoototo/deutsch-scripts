@@ -3,6 +3,7 @@ import json
 import argparse
 import pathlib
 import re
+from lemmify import lemmatize_sentence
 
 parser = argparse.ArgumentParser(description='Lemmify words from the specified fields in a given Anki deck.')
 parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to an anki2 file', required=True)
@@ -33,10 +34,7 @@ for row in rows:
         if field['name'] in target_fields:
             extracted.append(clean(row['data'][field['ord']]))
 
-import spacy
-
-nlp = spacy.load('de_core_news_sm')
-lemmas = list(set(list(map(lambda x : x.lemma_, nlp(" ".join(extracted))))))
+lemmas = list(set(lemmatize_sentence(" ".join(extracted))))
 
 with open(out_filename, 'w') as outfile:
     json.dump(lemmas, outfile)

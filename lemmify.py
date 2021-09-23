@@ -4,20 +4,6 @@ import pathlib
 
 # TODO: clean up tokens that are glued to HTML tags
 
-parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
-parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
-parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
-parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | yt}', required=True)
-parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
-
-args = parser.parse_args()
-in_filename = args.i
-out_filename = args.o
-source = args.s
-glue = not args.no_glue
-
-articles = json.load(open(in_filename))
-
 # taken from https://stackoverflow.com/a/4665027
 def find_all(a_str, sub):
     start = 0
@@ -53,31 +39,48 @@ def glue_dash(text):
         text[i+1] = text[i+1].lower()
     return ''.join(text)
 
+def lemmatize_sentence(sentence):
+    pos_dict = {'NOUN': 'N', 'VERB': 'V', 'ADJ': 'ADJ', 'ADV': 'ADV', 'AUX': 'V'}
+    res = nlp(sentence)
+    res = [x for x in res if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT']] # Filter names and punc.
+    res = [lemmatizer.find_lemma(x.text, pos_dict[x.pos_]) if x.pos_ in pos_dict.keys() else x.lemma_ for x in res]
+    res = list(set(res)) # eliminate duplicates
+    return res
+
 import spacy
+from germalemma import GermaLemma
 
 nlp = spacy.load('de_core_news_sm')
+lemmatizer = GermaLemma()
 
-for article in articles:
-    if (source == 'nl'):
-        if glue: article['content'] = glue_dash(article['content'])
-        text = extract_article_text(article['content'])
-    elif (source == 'yt'): text = article['transcript']
-    else: exit(1)
-    sentences = text.split('.')
-    lemmas = []
-    for sentence in sentences:
-        res = nlp(sentence)
-        names = [w for n in res.ents for w in n.__str__().split() if n.label_ in ['PER', 'LOC']]
-        filtered = set(filter(lambda t : t.lemma_ not in names, res))
-        lemmas.append(list(set(map(lambda t : t.lemma_, filtered))))
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
+    parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
+    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
+    parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | yt}', required=True)
+    parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
 
-    article['sentence-lemmas'] = list(lemmas)
-    res = nlp(text)
-    names = [w for n in res.ents for w in n.__str__().split() if n.label_ in ['PER', 'LOC']]
-    filtered = set(filter(lambda t : t.lemma_ not in names, res))
-    lemmas = set(map(lambda t: t.lemma_, filtered))
-    article['lemmas'] = list(lemmas)
+    args = parser.parse_args()
+    in_filename = args.i
+    out_filename = args.o
+    source = args.s
+    glue = not args.no_glue
+
+    articles = json.load(open(in_filename))
+
+    for article in articles:
+        if (source == 'nl'):
+            if glue: article['content'] = glue_dash(article['content'])
+            text = extract_article_text(article['content'])
+        elif (source == 'yt'): text = article['transcript']
+        else: exit(1)
+        sentences = text.split('.')
+        lemmas = []
+        for sentence in sentences:
+            lemmas.append(lemmatize_sentence(sentence))
+
+        article['sentence-lemmas'] = lemmas
+        article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.
 
 
-json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)
-
+    json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)

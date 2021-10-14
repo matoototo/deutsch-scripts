@@ -1,6 +1,6 @@
 import scrapy
 
-class QuotesSpider(scrapy.Spider):
+class NachrichtenleichtSpider(scrapy.Spider):
     def __init__(self):
         self.download_delay = 0.0
 

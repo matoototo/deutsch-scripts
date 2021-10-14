@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
     parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
-    parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | yt}', required=True)
+    parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | dw | yt}', required=True)
     parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
 
     args = parser.parse_args()
@@ -68,8 +68,8 @@ if __name__ == "__main__":
 
     articles = json.load(open(in_filename))
 
-    for article in articles:
-        if (source == 'nl'):
+    for i, article in enumerate(articles):
+        if (source in ['nl', 'dw']):
             if glue: article['content'] = glue_dash(article['content'])
             text = extract_article_text(article['content'])
         elif (source == 'yt'): text = article['transcript']

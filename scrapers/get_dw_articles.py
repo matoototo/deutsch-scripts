@@ -1,0 +1,37 @@
+import scrapy
+import datetime
+from readability import Document
+
+class DWSpider(scrapy.Spider):
+    name = 'dw_articles'
+    def __init__(self, from_date, to_date):
+        self.current_date = datetime.date(*[int(x) for x in from_date.split(".")[::-1]])
+        self.to_date = datetime.date(*[int(x) for x in to_date.split(".")[::-1]])
+        self.download_delay = 0.01
+        self.start_urls = [
+            self.create_url(self.current_date)
+        ]
+
+    def parse_article(self, response):
+        document = Document(response.body)
+
+        yield {
+            'url': response.url,
+            'content': f"<h2>{document.short_title()}</h2>" + document.summary()
+        }
+
+    def create_url(self, date):
+        return f'https://www.dw.com/search/?languageCode=de&contentType=ARTICLE&searchNavigationId=9077&from={self.date_to_str(date)}&to={self.date_to_str(date)}&sort=DATE&resultsCounter=100'
+
+
+    @staticmethod
+    def date_to_str(dt):
+        return f"{dt.day}.{dt.month}.{dt.year}"
+
+    def parse(self, response):
+        for article in response.css('div.searchResult'):
+            link = article.css('div a::attr(href)').get()
+            yield response.follow(link, self.parse_article)
+        if self.current_date < self.to_date:
+            self.current_date += datetime.timedelta(days=1)
+            yield response.follow(self.create_url(self.current_date), self.parse)

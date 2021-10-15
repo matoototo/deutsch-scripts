@@ -1,0 +1,5 @@
+ [requires]
+ rapidjson/cci.20200410
+
+ [generators]
+ cmake

@@ -1,6 +1,6 @@
 import scrapy
 import datetime
-from readability import Document
+import re
 
 class DWSpider(scrapy.Spider):
     name = 'dw_articles'
@@ -13,11 +13,12 @@ class DWSpider(scrapy.Spider):
         ]
 
     def parse_article(self, response):
-        document = Document(response.body)
-
+        title = response.css("h1").get().replace('h1>', 'h2>')
+        intro = f"<strong>{response.css('p.intro').get()}</strong>"
+        article = ''.join([f"<p>{re.sub('<.*?>', '', x)}</p>" for x in response.css(".longText p").getall()])
         yield {
             'url': response.url,
-            'content': f"<h2>{document.short_title()}</h2>" + document.summary()
+            'content': title+intro+article
         }
 
     def create_url(self, date):

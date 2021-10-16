@@ -18,5 +18,5 @@ unzip -j ./$renamed "collection.anki2" -d "decks/" >/dev/null
 rm ./$renamed
 
 python3 anki_lemmas.py -i "decks/collection.anki2" -o "data/extracted-anki.json" -f Word Sentence --src dw >/dev/null 2>&1
-python3 order_articles.py -k "data/extracted-anki.json" -a "data/dw-lemmified.json" -v "data/dw-vocab.json" -o "data/dw-processed.json" --src dw >/dev/null
+python3 order_articles.py -k "data/extracted-anki.json" -a "data/dw-lemmified.json" -v "data/dw-vocab.json" -o "data/dw-processed.json" >/dev/null
 python3 create_epub.py -i "data/dw-processed.json" -o "books/dw.epub" -l $2 -m --src dw >/dev/null

@@ -40,9 +40,10 @@ def process_count_n_plus_x(known, articles, vocab = None, x = 1):
 
 def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x)):
     vocab_keys = frozenset(vocab.keys())
+    nl_w = 6247/max(vocab.values()) # to get log inputs roughly in line with NL
     for article in articles:
         relevant_words = set(article['mined']).intersection(vocab_keys)
-        importance = sum([scale(vocab[k]) for k in relevant_words])
+        importance = sum([scale(nl_w*vocab[k]) for k in relevant_words])
         if len(relevant_words) != 0: importance /= len(relevant_words)
         article['importance'] = importance
     return articles
@@ -68,8 +69,8 @@ def importance_order(articles):
 
 def combined_order(articles):
     imp_w = 1.0
-    npx_w = 10.0
-    kwn_w = 1.0
+    npx_w = 18.0
+    kwn_w = 0.0
     len_w = 0.0
     articles.sort(key=(lambda x : imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']), reverse=True)
     return articles

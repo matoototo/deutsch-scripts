@@ -15,7 +15,10 @@ class DWSpider(scrapy.Spider):
     def parse_article(self, response):
         title = response.css("h1").get().replace('h1>', 'h2>')
         intro = f"<strong>{response.css('p.intro').get()}</strong>"
-        article = ''.join([f"<p>{re.sub('<.*?>', '', x)}</p>" for x in response.css(".longText p").getall()])
+        article = [f"<p>{re.sub('<.*?>', '', x)}</p>" for x in response.css(".longText p").getall()]
+        if len(article) > 0 and re.match('<p>...?/.*</p>', article[-1]):
+            article.pop()
+        article = ''.join(article)
         yield {
             'url': response.url,
             'content': title+intro+article

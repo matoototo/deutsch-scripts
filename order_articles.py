@@ -3,13 +3,19 @@ import math
 def process_percentage_known(known, articles, vocab = None):
     known = frozenset(known)
     vocab_keys = frozenset(vocab.keys())
-    processed = []
-    for article in articles:
+    remove = []
+    for i, article in enumerate(articles):
         if vocab: article_lemmas = set(article['lemmas']).intersection(vocab_keys)
         else: article_lemmas = frozenset(article['lemmas'])
-        percentage = len(known.intersection(article_lemmas))/len(article_lemmas)
-        processed.append({**article, 'percentage known': percentage, 'unknown': list(article_lemmas.difference(known))})
-    return processed
+        try:
+            percentage = len(known.intersection(article_lemmas))/len(article_lemmas)
+            article['percentage known'] = percentage
+            article['unknown'] = list(article_lemmas.difference(known))
+        except:
+            print('Empty article:', article['url'])
+            remove.append(i)
+    articles = [article for i, article in enumerate(articles) if i not in remove]
+    return articles
 
 def count_n_plus_x(known, article, vocab_keys = None, x = 1):
     known = frozenset(known)
@@ -26,29 +32,27 @@ def count_n_plus_x(known, article, vocab_keys = None, x = 1):
 
 def process_count_n_plus_x(known, articles, vocab = None, x = 1):
     vocab_keys = frozenset(vocab.keys())
-    processed = []
     for article in articles:
         count, mined_words = count_n_plus_x(known, article, vocab_keys, x)
-        processed.append({**article, 'percentage n+1': count/len(article['sentence-lemmas']), 'mined': mined_words})
-    return processed
+        article['percentage n+1'] = count/len(article['sentence-lemmas'])
+        article['mined'] = mined_words
+    return articles
 
 def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x)):
     vocab_keys = frozenset(vocab.keys())
-    processed = []
     for article in articles:
         relevant_words = set(article['mined']).intersection(vocab_keys)
         importance = sum([scale(vocab[k]) for k in relevant_words])
         if len(relevant_words) != 0: importance /= len(relevant_words)
-        processed.append({**article, 'importance': importance})
-    return processed
+        article['importance'] = importance
+    return articles
 
 def process_avg_length(articles):
-    processed = []
     for article in articles:
         lengths = list(map(lambda x : len(x), article['sentence-lemmas']))
         avglen = 0 if lengths == [] else sum(lengths)/len(lengths)
-        processed.append({**article, 'avglen': avglen})
-    return processed
+        article['avglen'] = avglen
+    return articles
 
 def percentage_known_order(articles):
     articles.sort(key=(lambda x : x['percentage known']), reverse=True)

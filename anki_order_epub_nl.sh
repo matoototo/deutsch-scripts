@@ -23,10 +23,10 @@ python3 order_articles.py -k "data/extracted-anki.json" -a "data/articles-lemmif
 
 if [[ $# == 3 && $3 == "split" ]]
 then
-  python3 create_epub.py -i "data/articles-processed.json" -o "data/book_vermischtes.epub" -l $2 -m -nsk >/dev/null
-  python3 create_epub.py -i "data/articles-processed.json" -o "data/book_kultur.epub" -l $2 -m -nsv >/dev/null
-  python3 create_epub.py -i "data/articles-processed.json" -o "data/book_sport.epub" -l $2 -m -nvk >/dev/null
-  python3 create_epub.py -i "data/articles-processed.json" -o "data/book_nachrichten.epub" -l $2 -m -vsk >/dev/null
+  python3 create_epub.py -i "data/articles-processed.json" -o "books/nl_vermischtes.epub" -l $2 -m -nsk --src nl >/dev/null
+  python3 create_epub.py -i "data/articles-processed.json" -o "books/nl_kultur.epub" -l $2 -m -nsv --src nl >/dev/null
+  python3 create_epub.py -i "data/articles-processed.json" -o "books/nl_sport.epub" -l $2 -m -nvk --src nl >/dev/null
+  python3 create_epub.py -i "data/articles-processed.json" -o "books/nl_nachrichten.epub" -l $2 -m -vsk --src nl >/dev/null
 else
-  python3 create_epub.py -i "data/articles-processed.json" -o "data/book.epub" -l $2 -m >/dev/null
+  python3 create_epub.py -i "data/articles-processed.json" -o "books/nl.epub" -l $2 -m --src nl >/dev/null
 fi

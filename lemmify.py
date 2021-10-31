@@ -69,6 +69,10 @@ if __name__ == "__main__":
     articles = json.load(open(in_filename))
 
     for i, article in enumerate(articles):
+
+        if i % 100 == 0:
+            print(f"{i}/{len(articles)}")
+
         if (source in ['nl', 'dw']):
             if glue: article['content'] = glue_dash(article['content'])
             text = extract_article_text(article['content'])

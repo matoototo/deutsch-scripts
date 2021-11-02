@@ -42,7 +42,7 @@ def glue_dash(text):
 def lemmatize_sentence(sentence):
     pos_dict = {'NOUN': 'N', 'VERB': 'V', 'ADJ': 'ADJ', 'ADV': 'ADV', 'AUX': 'V'}
     res = nlp(sentence)
-    res = [x for x in res if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT']] # Filter names and punc.
+    res = [x for x in res if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT', 'X', 'NUM']] # Filter names, punc, numbers and unknowns.
     res = [lemmatizer.find_lemma(x.text, pos_dict[x.pos_]) if x.pos_ in pos_dict.keys() else x.lemma_ for x in res]
     res = list(set(res)) # eliminate duplicates
     return res

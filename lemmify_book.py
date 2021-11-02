@@ -19,6 +19,7 @@ def lemmify_book(path):
         lemmas.append(lemmatize_sentence(sentence))
     book_obj['sentence-lemmas'] = lemmas
     book_obj['lemmas'] = list(set(sum(lemmas, [])))
+    return book_obj
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Lemmifies a given EPUB file and stores the results in JSON format.')

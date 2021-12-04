@@ -1,5 +1,4 @@
 EbookLib == 0.17.1
 Scrapy == 2.5.0
-spacy == 3.0.6
+spacy == 3.0.0
 germalemma == 0.1.3
-

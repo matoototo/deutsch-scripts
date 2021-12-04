@@ -6,7 +6,7 @@ import re
 import argparse
 import pathlib
 
-def lemmify_book(path):
+def lemmify_book(path, log = False):
     book = epub.read_epub(path)
     sentences = []
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
@@ -15,7 +15,8 @@ def lemmify_book(path):
 
     lemmas = []
     book_obj = {}
-    for sentence in sentences:
+    for i, sentence in enumerate(sentences):
+        if log: print(f"{i}/{len(sentences)}")
         lemmas.append(lemmatize_sentence(sentence))
     book_obj['sentence-lemmas'] = lemmas
     book_obj['lemmas'] = list(set(sum(lemmas, [])))
@@ -27,5 +28,5 @@ if __name__ == '__main__':
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
     args = parser.parse_args()
 
-    book_obj = lemmify_book(args.i)
+    book_obj = lemmify_book(args.i, True)
     json.dump([book_obj], open(args.o, 'w'), indent=4)

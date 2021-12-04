@@ -8,11 +8,11 @@ parser.add_argument('--vocab', metavar='filepath', type=pathlib.Path, help='file
 parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
 
 def calc_unknown(vocab, known):
-    return {x: y for x, y in vocab.items() if x not in known}
+    return {x: y for x, y in vocab.items() if x not in known and x.lower() not in known}
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    known = json.load(open(args.known))
-    vocab = json.load(open(args.vocab))
+    known = json.load(open(args.known, encoding="utf-8"))
+    vocab = json.load(open(args.vocab, encoding="utf-8"))
     unknown = calc_unknown(vocab, known)
-    json.dump(unknown, open(args.o, 'w'), separators=(',', ': '), indent=4)
+    json.dump(unknown, open(args.o, 'w', encoding="utf-8"), separators=(',', ': '), indent=4, ensure_ascii=False)

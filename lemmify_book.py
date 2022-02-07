@@ -1,5 +1,5 @@
 from ebooklib import epub
-from lemmify import lemmatize_sentence
+from lemmify import lemmatize_sentences
 import ebooklib
 import json
 import re
@@ -15,9 +15,7 @@ def lemmify_book(path, log = False):
 
     lemmas = []
     book_obj = {}
-    for i, sentence in enumerate(sentences):
-        if log: print(f"{i}/{len(sentences)}")
-        lemmas.append(lemmatize_sentence(sentence))
+    lemmas = lemmatize_sentences(sentences)
     book_obj['sentence-lemmas'] = lemmas
     book_obj['lemmas'] = list(set(sum(lemmas, [])))
     return book_obj

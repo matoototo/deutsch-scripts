@@ -47,10 +47,19 @@ def lemmatize_sentence(sentence):
     res = list(set(res)) # eliminate duplicates
     return res
 
+def lemmatize_sentences(sentences):
+    pos_dict = {'NOUN': 'N', 'VERB': 'V', 'ADJ': 'ADJ', 'ADV': 'ADV', 'AUX': 'V'}
+    res = list(nlp.pipe(sentences))
+    for i in range(len(res)):
+        res[i] = [x for x in res[i] if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT', 'X', 'NUM']] # Filter names, punc, numbers and unknowns.
+        res[i] = [lemmatizer.find_lemma(x.text, pos_dict[x.pos_]) if x.pos_ in pos_dict.keys() else x.lemma_ for x in res[i]]
+        res[i] = list(set(res[i])) # eliminate duplicates
+    return res
+
 import spacy
 from germalemma import GermaLemma
 
-nlp = spacy.load('de_core_news_sm')
+nlp = spacy.load('de_core_news_md')
 lemmatizer = GermaLemma()
 
 if __name__ == "__main__":
@@ -69,7 +78,6 @@ if __name__ == "__main__":
     articles = json.load(open(in_filename))
 
     for i, article in enumerate(articles):
-
         if i % 100 == 0:
             print(f"{i}/{len(articles)}")
 
@@ -78,10 +86,9 @@ if __name__ == "__main__":
             text = extract_article_text(article['content'])
         elif (source == 'yt'): text = article['transcript']
         else: exit(1)
+
         sentences = text.split('.')
-        lemmas = []
-        for sentence in sentences:
-            lemmas.append(lemmatize_sentence(sentence))
+        lemmas = lemmatize_sentences(sentences)
 
         article['sentence-lemmas'] = lemmas
         article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.

@@ -90,6 +90,7 @@ if __name__ == "__main__":
         sentences = text.split('.')
         lemmas = lemmatize_sentences(sentences)
 
+        article['sentences'] = sentences
         article['sentence-lemmas'] = lemmas
         article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.
 

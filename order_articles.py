@@ -55,6 +55,16 @@ def process_avg_length(articles):
         article['avglen'] = avglen
     return articles
 
+def process_score(articles):
+    imp_w = 1.0
+    npx_w = 20.0
+    kwn_w = 0.0
+    len_w = 0.0
+    for x in articles:
+        score = imp_w*x['importance']*npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']
+        x['score'] = score
+    return articles
+
 def percentage_known_order(articles):
     articles.sort(key=(lambda x : x['percentage known']), reverse=True)
     return articles
@@ -67,12 +77,8 @@ def importance_order(articles):
     articles.sort(key=(lambda x : x['importance']), reverse=True)
     return articles
 
-def combined_order(articles):
-    imp_w = 1.0
-    npx_w = 18.0
-    kwn_w = 0.0
-    len_w = 0.0
-    articles.sort(key=(lambda x : imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']), reverse=True)
+def score_order(articles):
+    articles.sort(key=(lambda x : x['score']), reverse=True)
     return articles
 
 if __name__ == '__main__':
@@ -96,10 +102,14 @@ if __name__ == '__main__':
     articles = json.load(open(articles_path))
     vocab = json.load(open(vocab_path))
 
+    filtered_vocab = frozenset(json.load(open("filtered.json")))
+    vocab = {k:v for k, v in vocab.items() if k not in filtered_vocab}
+
     articles = process_count_n_plus_x(known_lemmas, articles, vocab)
     articles = process_percentage_known(known_lemmas, articles, vocab)
     articles = process_importance_of_mined(articles, vocab)
     articles = process_avg_length(articles)
-    articles = combined_order(articles)
+    articles = process_score(articles)
+    articles = score_order(articles)
 
     json.dump(articles, open(out_path, 'w'), indent=4)

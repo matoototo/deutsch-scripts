@@ -1,6 +1,7 @@
 import json
 import argparse
 import pathlib
+import re
 
 # TODO: clean up tokens that are glued to HTML tags
 
@@ -87,7 +88,7 @@ if __name__ == "__main__":
         elif (source == 'yt'): text = article['transcript']
         else: exit(1)
 
-        sentences = text.split('.')
+        sentences = re.split(r"[.!?]\s+", text)
         lemmas = lemmatize_sentences(sentences)
 
         article['sentences'] = sentences

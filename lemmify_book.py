@@ -11,7 +11,7 @@ def lemmify_book(path):
     sentences = []
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         content = item.get_body_content().decode('utf-8')
-        sentences += [x.strip() for x in re.split('\.|«|»', re.sub('<.*?>', '', content).strip()) if x.strip()]
+        sentences += [x.strip() for x in re.split(r'[.«»!?]', re.sub('<.*?>', '', content).strip()) if x.strip()]
 
     lemmas = []
     book_obj = {}

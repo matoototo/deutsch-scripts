@@ -3,7 +3,7 @@ import json
 import argparse
 import pathlib
 import re
-from lemmify import lemmatize_sentence
+from lemmify import lemmatize_sentences
 
 
 def lemmify_deck(in_filename, target_fields):
@@ -19,6 +19,9 @@ def lemmify_deck(in_filename, target_fields):
 
     def clean(row):
         row = re.sub(r"</?\w+>", " ", row)
+        row = row.replace("&nbsp;", " ")
+        if "Schloss" in row:
+            print(repr(row))
         return row
 
     extracted = []
@@ -26,8 +29,7 @@ def lemmify_deck(in_filename, target_fields):
         for field in note_types[str(row['mid'])]['flds']:
             if field['name'] in target_fields:
                 extracted.append(clean(row['data'][field['ord']]))
-
-    return list(set(lemmatize_sentence(" ".join(extracted))))
+    return list(set(sum(lemmatize_sentences(extracted), [])))
 
 
 if __name__ == '__main__':

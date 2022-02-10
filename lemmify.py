@@ -2,6 +2,9 @@ import json
 import argparse
 import pathlib
 import re
+from os import listdir
+from os.path import isfile, join
+
 
 # TODO: clean up tokens that are glued to HTML tags
 
@@ -60,13 +63,13 @@ def lemmatize_sentences(sentences):
 import spacy
 from germalemma import GermaLemma
 
-nlp = spacy.load('de_core_news_md')
+nlp = spacy.load('de_core_news_lg')
 lemmatizer = GermaLemma()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
-    parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file', required=True)
-    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
+    parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file or a folder containing JSON files', required=True)
+    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file or a folder', required=True)
     parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | dw | yt}', required=True)
     parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
 
@@ -76,24 +79,35 @@ if __name__ == "__main__":
     source = args.s
     glue = not args.no_glue
 
-    articles = json.load(open(in_filename))
+    if in_filename.suffix == ".json":
+        onlyfiles = [in_filename]
+    elif out_filename.suffix == ".json":
+        print("If used in folder-mode, both paths should be folders.")
+        exit(1)
+    else:
+        onlyfiles = [in_filename / f for f in listdir(in_filename) if isfile(join(in_filename, f))]
 
-    for i, article in enumerate(articles):
-        if i % 100 == 0:
-            print(f"{i}/{len(articles)}")
+    for file in onlyfiles:
+        articles = json.load(open(file))
 
-        if (source in ['nl', 'dw']):
-            if glue: article['content'] = glue_dash(article['content'])
-            text = extract_article_text(article['content'])
-        elif (source == 'yt'): text = article['transcript']
-        else: exit(1)
+        for i, article in enumerate(articles):
+            if i % 100 == 0:
+                print(f"{i}/{len(articles)}")
 
-        sentences = re.split(r"[.!?]\s+", text)
-        lemmas = lemmatize_sentences(sentences)
+            if (source in ['nl', 'dw']):
+                if glue: article['content'] = glue_dash(article['content'])
+                text = extract_article_text(article['content'])
+            elif (source == 'yt'): text = article['transcript']
+            else: exit(1)
 
-        article['sentences'] = sentences
-        article['sentence-lemmas'] = lemmas
-        article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.
+            sentences = re.split(r"[.!?]\s+", text)
+            lemmas = lemmatize_sentences(sentences)
 
+            article['sentences'] = sentences
+            article['sentence-lemmas'] = lemmas
+            article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.
 
-    json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)
+        if len(onlyfiles) > 1:
+            json.dump(articles, open(out_filename / f"{file.stem}-lemmified.json", 'w'), separators=(',', ': '), indent=4)
+        else:
+            json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)

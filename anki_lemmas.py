@@ -20,8 +20,6 @@ def lemmify_deck(in_filename, target_fields):
     def clean(row):
         row = re.sub(r"</?\w+>", " ", row)
         row = row.replace("&nbsp;", " ")
-        if "Schloss" in row:
-            print(repr(row))
         return row
 
     extracted = []

@@ -1,4 +1,7 @@
+from genericpath import isfile
 import math
+from os import listdir
+from posixpath import join
 
 def process_percentage_known(known, articles, vocab = None):
     known = frozenset(known)
@@ -87,9 +90,9 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Order articles.')
     parser.add_argument('-k', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with known lemmas', required=True)
-    parser.add_argument('-a', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with the articles', required=True)
+    parser.add_argument('-a', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with the articles or to a folder', required=True)
     parser.add_argument('-v', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with allowed vocab', required=True)
-    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
+    parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file or to a folder', required=True)
 
     args = parser.parse_args()
     known_path = args.k
@@ -97,19 +100,26 @@ if __name__ == '__main__':
     vocab_path = args.v
     out_path = args.o
 
-
     known_lemmas = json.load(open(known_path))
-    articles = json.load(open(articles_path))
     vocab = json.load(open(vocab_path))
-
     filtered_vocab = frozenset(json.load(open("filtered.json")))
     vocab = {k:v for k, v in vocab.items() if k not in filtered_vocab}
 
-    articles = process_count_n_plus_x(known_lemmas, articles, vocab)
-    articles = process_percentage_known(known_lemmas, articles, vocab)
-    articles = process_importance_of_mined(articles, vocab)
-    articles = process_avg_length(articles)
-    articles = process_score(articles)
-    articles = score_order(articles)
+    if articles_path.suffix == ".json":
+        onlyfiles = [articles_path]
+    elif out_path.suffix == ".json":
+        print("If used in folder-mode, both input and output paths should be folders.")
+        exit(1)
+    else:
+        onlyfiles = [articles_path / f for f in listdir(articles_path) if isfile(join(articles_path, f))]
 
-    json.dump(articles, open(out_path, 'w'), indent=4)
+    for file in onlyfiles:
+        articles = json.load(open(file))
+        articles = process_count_n_plus_x(known_lemmas, articles, vocab)
+        articles = process_percentage_known(known_lemmas, articles, vocab)
+        articles = process_importance_of_mined(articles, vocab)
+        articles = process_avg_length(articles)
+        articles = process_score(articles)
+        articles = score_order(articles)
+
+        json.dump(articles, open(out_path / f"{file.stem}-processed.json", 'w'), indent=4)

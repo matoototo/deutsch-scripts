@@ -93,16 +93,19 @@ if __name__ == '__main__':
     parser.add_argument('-a', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with the articles or to a folder', required=True)
     parser.add_argument('-v', metavar='filepath', type=pathlib.Path, help='filepath pointing to the JSON file with allowed vocab', required=True)
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file or to a folder', required=True)
+    parser.add_argument('-f', metavar='filepath', type=pathlib.Path, help='filepath pointing to the filtering JSON file', required=False, default=None)
+
 
     args = parser.parse_args()
     known_path = args.k
     articles_path = args.a
     vocab_path = args.v
     out_path = args.o
+    filter_path = args.f
 
     known_lemmas = json.load(open(known_path))
     vocab = json.load(open(vocab_path))
-    filtered_vocab = frozenset(json.load(open("filtered.json")))
+    filtered_vocab = frozenset(json.load(open(filter_path))) if filter_path else dict()
     vocab = {k:v for k, v in vocab.items() if k not in filtered_vocab}
 
     if articles_path.suffix == ".json":

@@ -23,11 +23,14 @@ def lemmify_deck(in_filename, target_fields):
         return row
 
     extracted = []
+    singles = []
     for row in rows:
         for field in note_types[str(row['mid'])]['flds']:
             if field['name'] in target_fields:
-                extracted.append(clean(row['data'][field['ord']]))
-    return list(set(sum(lemmatize_sentences(extracted), [])))
+                output = clean(row['data'][field['ord']]).strip()
+                if len(output.split(" ")) == 1: singles.append(output)
+                else: extracted.append(output)
+    return list(set(sum(lemmatize_sentences(extracted), singles)))
 
 
 if __name__ == '__main__':

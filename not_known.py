@@ -31,4 +31,8 @@ if __name__ == '__main__':
             vocab = json.load(open(args.vocab / file, encoding="utf-8"))
             name, extension = file.split('.')
             glued = calc_unknown(vocab, known)
-            json.dump(glued, open(args.o / f"{name}-unknown.json", 'w'), separators=(',', ': '), indent=4)
+
+            if args.o.suffix == ".json":
+                json.dump(glued, open(args.o, 'w'), separators=(',', ': '), indent=4)
+            else:
+                json.dump(glued, open(args.o / f"{name}-unknown.json", 'w'), separators=(',', ': '), indent=4)

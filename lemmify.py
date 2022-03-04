@@ -72,12 +72,14 @@ if __name__ == "__main__":
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file or a folder', required=True)
     parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | dw | yt}', required=True)
     parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
+    parser.add_argument('--split-comma', help='boolean flag that enables splitting sentences on commas', action='store_true')
 
     args = parser.parse_args()
     in_filename = args.i
     out_filename = args.o
     source = args.s
     glue = not args.no_glue
+    split_comma = args.split_comma
 
     if in_filename.suffix == ".json":
         onlyfiles = [in_filename]
@@ -98,9 +100,14 @@ if __name__ == "__main__":
                 if glue: article['content'] = glue_dash(article['content'])
                 text = extract_article_text(article['content'])
             elif (source == 'yt'): text = article['transcript']
+            elif source == 'wiki': text = article['text']
             else: exit(1)
 
-            sentences = re.split(r"[.!?]\s+", text)
+            if split_comma:
+                sentences = re.split(r"[,.!?]\s+", text)
+            else:
+                sentences = re.split(r"[.!?]\s+", text)
+
             lemmas = lemmatize_sentences(sentences)
 
             article['sentences'] = sentences

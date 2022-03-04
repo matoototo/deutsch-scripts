@@ -15,7 +15,8 @@ def process_percentage_known(known, articles, vocab = None):
             article['percentage known'] = percentage
             article['unknown'] = list(article_lemmas.difference(known))
         except:
-            print('Empty article:', article['url'])
+            key = 'url' if 'url' in article.keys() else 'title'
+            print('Empty article:', article[key])
             remove.append(i)
     articles = [article for i, article in enumerate(articles) if i not in remove]
     return articles
@@ -125,4 +126,7 @@ if __name__ == '__main__':
         articles = process_score(articles)
         articles = score_order(articles)
 
-        json.dump(articles, open(out_path / f"{file.stem}-processed.json", 'w'), indent=4)
+        if out_path.suffix == ".json":
+            json.dump(articles, open(out_path, 'w'), indent=4)
+        else:
+            json.dump(articles, open(out_path / f"{file.stem}-processed.json", 'w'), indent=4)

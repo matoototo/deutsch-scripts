@@ -44,33 +44,29 @@ def glue_dash(text):
     return ''.join(text)
 
 def lemmatize_sentence(sentence):
-    pos_dict = {'NOUN': 'N', 'VERB': 'V', 'ADJ': 'ADJ', 'ADV': 'ADV', 'AUX': 'V'}
     res = nlp(sentence)
     res = [x for x in res if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT', 'X', 'NUM']] # Filter names, punc, numbers and unknowns.
-    res = [lemmatizer.find_lemma(x.text, pos_dict[x.pos_]) if x.pos_ in pos_dict.keys() else x.lemma_ for x in res]
+    res = [x.lemma_ for x in res]
     res = list(set(res)) # eliminate duplicates
     return res
 
 def lemmatize_sentences(sentences):
-    pos_dict = {'NOUN': 'N', 'VERB': 'V', 'ADJ': 'ADJ', 'ADV': 'ADV', 'AUX': 'V'}
     res = list(nlp.pipe(sentences))
     for i in range(len(res)):
         res[i] = [x for x in res[i] if x.pos_ not in ['PROPN', 'SPACE', 'PUNCT', 'X', 'NUM']] # Filter names, punc, numbers and unknowns.
-        res[i] = [lemmatizer.find_lemma(x.text, pos_dict[x.pos_]) if x.pos_ in pos_dict.keys() else x.lemma_ for x in res[i]]
+        res[i] = [x.lemma_ for x in res[i]]
         res[i] = list(set(res[i])) # eliminate duplicates
-    return res
+    return [x for x in res if len(x) > 2]
 
 import spacy
-from germalemma import GermaLemma
 
 nlp = spacy.load('de_core_news_lg')
-lemmatizer = GermaLemma()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
     parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to a JSON file or a folder containing JSON files', required=True)
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file or a folder', required=True)
-    parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | dw | yt}', required=True)
+    parser.add_argument('-s', metavar='source', type=str, help='source of the content in the JSON file, {nl | dw | yt | wiki}', required=True)
     parser.add_argument('--no-glue', help='boolean flag that disables glueing together - separated words', action='store_true')
     parser.add_argument('--split-comma', help='boolean flag that enables splitting sentences on commas', action='store_true')
 

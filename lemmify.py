@@ -58,6 +58,30 @@ def lemmatize_sentences(sentences):
         res[i] = list(set(res[i])) # eliminate duplicates
     return [x for x in res if len(x) > 2]
 
+def glue_if_number(sentences):
+    # glues sentences that end in a number (usually ordinals)
+    # TODO: come up with a better solution
+    glued_some = True
+    res = [s for s in sentences if len(s) > 2]
+    while glued_some:
+        res_new = []
+        glued_some = False
+        last_was_glued = False
+        for s1, s2 in zip(res[:-1], res[1:]):
+            if s1[-1].isdigit():
+                if last_was_glued:
+                    res_new[-1] = f"{res_new[-1]}. {s2}"
+                else:
+                    res_new.append(f"{s1}. {s2}")
+                glued_some = True
+                last_was_glued = True
+            else:
+                res_new.append(s1)
+                last_was_glued = False
+        res = res_new
+        if not glued_some:
+            return res
+
 import spacy
 
 nlp = spacy.load('de_core_news_lg')
@@ -103,6 +127,8 @@ if __name__ == "__main__":
                 sentences = re.split(r"[,.!?]\s+", text)
             else:
                 sentences = re.split(r"[.!?]\s+", text)
+
+            sentences = glue_if_number(sentences)
 
             lemmas = lemmatize_sentences(sentences)
 

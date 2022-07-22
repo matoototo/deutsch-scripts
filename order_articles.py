@@ -3,6 +3,12 @@ import math
 from os import listdir
 from posixpath import join
 
+def llower(arr):
+    return set([x.lower() for x in arr])
+
+def wsum(words, w = 0.5):
+    return sum([w**i * s for i, s in enumerate(words)])
+
 def process_percentage_known(known, articles, vocab = None):
     known = frozenset(known)
     vocab_keys = frozenset(vocab.keys())
@@ -11,12 +17,14 @@ def process_percentage_known(known, articles, vocab = None):
         if vocab: article_lemmas = set(article['lemmas']).intersection(vocab_keys)
         else: article_lemmas = frozenset(article['lemmas'])
         try:
-            percentage = len(known.intersection(article_lemmas))/len(article_lemmas)
+            percentage = len(known.intersection(llower(article_lemmas)))/len(article_lemmas)
             article['percentage known'] = percentage
             article['unknown'] = list(article_lemmas.difference(known))
         except:
-            key = 'url' if 'url' in article.keys() else 'title'
-            print('Empty article:', article[key])
+            if 'url' not in article:
+                print('Empty article:', article['id'], article['title'])
+            else:
+                print('Empty article:', article['url'])
             remove.append(i)
     articles = [article for i, article in enumerate(articles) if i not in remove]
     return articles
@@ -28,7 +36,8 @@ def count_n_plus_x(known, article, vocab_keys = None, x = 1):
     for lemmas in article['sentence-lemmas']:
         if vocab_keys: filtered_lemmas = set(lemmas).intersection(vocab_keys)
         else: filtered_lemmas = lemmas
-        diff = set(filtered_lemmas).difference(known)
+        # diff = set(filtered_lemmas).difference(known)
+        diff = [x for x in filtered_lemmas if x.lower() not in known]
         if len(diff) == x:
             count += 1
             mined_words += list(diff)
@@ -38,17 +47,19 @@ def process_count_n_plus_x(known, articles, vocab = None, x = 1):
     vocab_keys = frozenset(vocab.keys())
     for article in articles:
         count, mined_words = count_n_plus_x(known, article, vocab_keys, x)
-        article['percentage n+1'] = count/len(article['sentence-lemmas'])
+        if len(article['sentence-lemmas']):
+            article['percentage n+1'] = count/len(article['sentence-lemmas'])
+        else:
+            article['percentage n+1'] = 0
         article['mined'] = mined_words
     return articles
 
-def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x)):
+def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x), w = 0.66):
     vocab_keys = frozenset(vocab.keys())
     nl_w = 6247/max(vocab.values()) # to get log inputs roughly in line with NL
     for article in articles:
         relevant_words = set(article['mined']).intersection(vocab_keys)
-        importance = sum([scale(nl_w*vocab[k]) for k in relevant_words])
-        if len(relevant_words) != 0: importance /= len(relevant_words)
+        importance = wsum(sorted([scale(nl_w*vocab[k]) for k in relevant_words], reverse=True), w)
         article['importance'] = importance
     return articles
 
@@ -61,11 +72,11 @@ def process_avg_length(articles):
 
 def process_score(articles):
     imp_w = 1.0
-    npx_w = 20.0
+    npx_w = 7.5
     kwn_w = 0.0
-    len_w = 0.0
+    len_w = -0.01
     for x in articles:
-        score = imp_w*x['importance']*npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']
+        score = imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']
         x['score'] = score
     return articles
 
@@ -104,7 +115,7 @@ if __name__ == '__main__':
     out_path = args.o
     filter_path = args.f
 
-    known_lemmas = json.load(open(known_path))
+    known_lemmas = [x.lower() for x in json.load(open(known_path))]
     vocab = json.load(open(vocab_path))
     filtered_vocab = frozenset(json.load(open(filter_path))) if filter_path else dict()
     vocab = {k:v for k, v in vocab.items() if k not in filtered_vocab}
@@ -126,7 +137,4 @@ if __name__ == '__main__':
         articles = process_score(articles)
         articles = score_order(articles)
 
-        if out_path.suffix == ".json":
-            json.dump(articles, open(out_path, 'w'), indent=4)
-        else:
-            json.dump(articles, open(out_path / f"{file.stem}-processed.json", 'w'), indent=4)
+        json.dump(articles, open(out_path / f"{file.stem}-processed.json", 'w'), indent=4)

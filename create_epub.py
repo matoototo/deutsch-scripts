@@ -110,7 +110,7 @@ if __name__ == '__main__':
     char_tag = get_char_tag(args)
     title = get_title(args, char_tag)
 
-    articles = json.load(open(in_filename))
+    articles = json.load(open(in_filename, encoding='utf-8'))
     if source == 'nl':
         articles = [article for article in articles if nl_tag_filter(article, args)]
 

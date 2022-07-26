@@ -15,7 +15,7 @@ def bad_char_predicate(word):
 
 
 def create_vocab(in_filename):
-    articles = json.load(open(in_filename))
+    articles = json.load(open(in_filename, encoding='utf-8'))
     lemmas = []
 
     for article in articles:

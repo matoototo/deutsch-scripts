@@ -115,9 +115,9 @@ if __name__ == '__main__':
     out_path = args.o
     filter_path = args.f
 
-    known_lemmas = [x.lower() for x in json.load(open(known_path))]
-    vocab = json.load(open(vocab_path))
-    filtered_vocab = frozenset(json.load(open(filter_path))) if filter_path else dict()
+    known_lemmas = [x.lower() for x in json.load(open(known_path, encoding='utf-8'))]
+    vocab = json.load(open(vocab_path, encoding='utf-8'))
+    filtered_vocab = frozenset(json.load(open(filter_path, encoding='utf-8'))) if filter_path else dict()
     vocab = {k:v for k, v in vocab.items() if k not in filtered_vocab}
 
     if articles_path.suffix == ".json":
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         onlyfiles = [articles_path / f for f in listdir(articles_path) if isfile(join(articles_path, f))]
 
     for file in onlyfiles:
-        articles = json.load(open(file))
+        articles = json.load(open(file, encoding='utf-8'))
         articles = process_count_n_plus_x(known_lemmas, articles, vocab)
         articles = process_percentage_known(known_lemmas, articles, vocab)
         articles = process_importance_of_mined(articles, vocab)

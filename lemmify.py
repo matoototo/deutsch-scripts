@@ -59,8 +59,8 @@ def lemmatize_sentences(sentences):
     return [x for x in res if len(x) > 2]
 
 def glue_if_number(sentences):
-    # glues sentences that end in a number (usually ordinals)
-    # TODO: come up with a better solution
+    # glues sentences that end in a number
+    # (usually years or ordinals, which are not ends of sentences)
     glued_some = True
     res = [s for s in sentences if len(s) > 2]
     while glued_some:
@@ -110,7 +110,7 @@ if __name__ == "__main__":
         onlyfiles = [in_filename / f for f in listdir(in_filename) if isfile(join(in_filename, f))]
 
     for file in onlyfiles:
-        articles = json.load(open(file))
+        articles = json.load(open(file, encoding="utf-8"))
 
         for i, article in enumerate(articles):
             if i % 100 == 0:

@@ -44,5 +44,6 @@ if __name__ == '__main__':
     target_fields = args.f
 
     lemmas = lemmify_deck(in_filename, target_fields)
-    with open(out_filename, 'w') as outfile:
-        json.dump(lemmas, outfile)
+
+    with open(out_filename, 'w+') as outfile:
+        outfile.writelines(json.dumps(lemmas))

@@ -84,7 +84,7 @@ def glue_if_number(sentences):
 
 import spacy
 
-nlp = spacy.load('de_core_news_lg')
+nlp = spacy.load('de_core_news_sm')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Lemmify a given JSON file.')
@@ -137,6 +137,6 @@ if __name__ == "__main__":
             article['lemmas'] = list(set(sum(lemmas, []))) # Join all lemmas together into one list.
 
         if len(onlyfiles) > 1:
-            json.dump(articles, open(out_filename / f"{file.stem}-lemmified.json", 'w'), separators=(',', ': '), indent=4)
+            json.dump(articles, open(out_filename / f"{file.stem}-lemmified.json", 'w', encoding='utf-8'), separators=(',', ': '), indent=4)
         else:
-            json.dump(articles, open(out_filename, 'w'), separators=(',', ': '), indent=4)
+            json.dump(articles, open(out_filename, 'w', encoding='utf-8'), separators=(',', ': '), indent=4)

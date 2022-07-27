@@ -16,7 +16,13 @@ def add_dot_after_headings(text):
     # add dot after headings such as ==Heading==
     return re.sub(r'(==.*?==)', r'\1.', text)
 
-
+def remove_categories(text):
+    # remove words containing :
+    new = ""
+    for word in text.split():
+        if ':' not in word:
+            new += word + ' '
+    return new
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Cleans a given wiki JSON file by removing tables and other junk.')
@@ -29,4 +35,5 @@ if __name__ == '__main__':
         article['text'] = remove_tables(article['text'])
         article['text'] = remove_modifiers(article['text'])
         article['text'] = add_dot_after_headings(article['text'])
+        article['text'] = remove_categories(article['text'])
     json.dump(articles, open(args.o, 'w'), indent=4)

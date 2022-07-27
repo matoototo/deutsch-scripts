@@ -45,5 +45,5 @@ if __name__ == '__main__':
 
     lemmas = lemmify_deck(in_filename, target_fields)
 
-    with open(out_filename, 'w+') as outfile:
+    with open(out_filename, 'w+', encoding='utf-8') as outfile:
         outfile.writelines(json.dumps(lemmas))

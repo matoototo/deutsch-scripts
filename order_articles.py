@@ -21,6 +21,8 @@ def process_percentage_known(known, articles, vocab = None):
             article['percentage known'] = percentage
             article['unknown'] = list(article_lemmas.difference(known))
         except:
+            remove.append(i)
+            continue
             if 'url' not in article:
                 print('Empty article:', article['id'], article['title'])
             else:
@@ -63,20 +65,21 @@ def process_importance_of_mined(articles, vocab, scale = lambda x : math.log(x),
         article['importance'] = importance
     return articles
 
-def process_avg_length(articles):
+def process_length(articles, scale = lambda x : math.log(x)):
     for article in articles:
         lengths = list(map(lambda x : len(x), article['sentence-lemmas']))
         avglen = 0 if lengths == [] else sum(lengths)/len(lengths)
         article['avglen'] = avglen
+        article['totlen'] = scale(sum(lengths))
     return articles
 
 def process_score(articles):
     imp_w = 1.0
     npx_w = 7.5
-    kwn_w = 0.0
-    len_w = -0.01
+    kwn_w = 1.0
+    len_w = -0.25
     for x in articles:
-        score = imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['avglen']
+        score = imp_w*x['importance'] + npx_w*x['percentage n+1'] + kwn_w*x['percentage known'] + len_w*x['totlen']
         x['score'] = score
     return articles
 
@@ -133,7 +136,7 @@ if __name__ == '__main__':
         articles = process_count_n_plus_x(known_lemmas, articles, vocab)
         articles = process_percentage_known(known_lemmas, articles, vocab)
         articles = process_importance_of_mined(articles, vocab)
-        articles = process_avg_length(articles)
+        articles = process_length(articles)
         articles = process_score(articles)
         articles = score_order(articles)
 

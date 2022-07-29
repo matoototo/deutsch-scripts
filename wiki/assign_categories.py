@@ -1,4 +1,3 @@
-import re
 import json
 import pathlib
 import argparse
@@ -16,7 +15,7 @@ def get_categories(text):
     return categories
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Cleans a given wiki JSON file by removing tables and other junk.')
+    parser = argparse.ArgumentParser(description='Extracts categories from a wiki JSON.')
     parser.add_argument('-i', metavar='filepath', type=pathlib.Path, help='filepath pointing to an wikipedia JSON', required=True)
     parser.add_argument('-o', metavar='filepath', type=pathlib.Path, help='filepath pointing to the output JSON file', required=True)
     args = parser.parse_args()
